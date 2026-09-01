@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Brain Tumor Classification</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .container { width: 60%; margin: auto; padding: 20px; background-color: #f0f0f0; border-radius: 10px; margin-top: 50px; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        #testImage { width: 500px; height: 500px; object-fit: cover; border-radius: 10px; margin-top: 20px; display: none; }
+        #loadingIndicator { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2em; background: rgba(255,255,255,0.8); padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 1em; border: none; border-radius: 5px; background-color: #007bff; color: white; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        input { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brain Tumor Image Prediction</h1>
+
+        <!-- File Upload -->
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="uploadImage()">Upload & Predict</button>
+
+        <!-- Image and Prediction -->
+        <img id="testImage" src="" alt="Test Image">
+        <p id="predictedLabel">Predicted Label: </p>
+    </div>
+
+    <div id="loadingIndicator">Loading...</div>
+
+    <script>
+        function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            if (!fileInput.files[0]) {
+                alert('Please select an image');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            document.getElementById('loadingIndicator').style.display = 'block';
+            fetch('/upload-image', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error){
+                        alert(data.error);
+                    } else {
+                        // Show the uploaded image
+                        const img = document.getElementById('testImage');
+                        img.src = data.image_path;  // path returned from backend
+                        img.style.display = 'block'; // make it visible
+                        document.getElementById('predictedLabel').innerText = 'Predicted Label: ' + data.predicted_label;
+                    }
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>
